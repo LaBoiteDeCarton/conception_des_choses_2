@@ -1,0 +1,44 @@
+Vagrant.configure(2) do |config|
+    config.vm.box = "generic/ubuntu2204"
+
+    # CRITICAL: Skip SSH wait, provision anyway
+    config.ssh.insert_key = false
+    config.ssh.forward_agent = true
+    config.vm.boot_timeout = 600
+
+    config.vm.define "dmercadiS" do |control|
+    control.vm.hostname = "dmercadiS"
+
+    control.vm.provider "qemu" do |qemu|
+        qemu.arch = "aarch64"
+        qemu.smp = "1"
+        qemu.memory = "1024"
+        qemu.ssh_port = 5022
+        qemu.extra_args = "-machine virt,accel=hvf -cpu host -netdev user,id=net0,hostfwd=tcp::5022-:22,hostfwd=tcp::6443-:6443 -device virtio-net-pci,netdev=net0"
+    end
+
+    # Provision runs regardless of SSH status
+    config.vm.provision "shell", type: "shell", inline: <<-SHELL, run: "always", privileged: false
+        echo "Provisioning k3s (SSH optional)..."
+        export INSTALL_K3S_EXEC="--write-kubeconfig-mode=644 --tls-san localhost --bind-address=0.0.0.0"
+        sudo curl -sfL https://get.k3s.io | sh -
+        sudo cat /var/lib/rancher/k3s/server/node-token > /vagrant/token.env
+        echo "K3s ready! Token saved."
+    SHELL
+    end
+    # config.vm.define "dmercadiSW" do |control|
+    #     control.vm.hostname = "dmercadiSW"
+    #     control.vm.network "private_network", ip: "192.168.56.111"
+    #     control.vm.provider "libvirt" do |v|
+    #         v.uri = 'qemu:///session'
+    #         v.driver = "qemu"
+    #         v.memory = 1024
+    #         v.cpus = 1
+    #     end
+    #     config.vm.provision "shell", inline: <<-SHELL
+    #         export INSTALL_K3S_EXEC="agent --server https://192.168.56.110:6443 -t $(cat /vagrant/token.env) --node-ip=192.168.56.111"
+    #         curl -sfL https://get.k3s.io | sh -
+    #         sudo ip link add eth1 type dummy && sudo ip addr add 192.168.56.111/24 dev eth1 && sudo ip link set eth1 up
+    #     SHELL
+    # end
+end
