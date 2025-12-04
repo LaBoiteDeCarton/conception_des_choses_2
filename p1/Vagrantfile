@@ -1,0 +1,95 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # Use a modern Ubuntu box
+  config.vm.box = "generic/ubuntu2204"
+  
+  # Common configuration for both machines
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 1
+  end
+
+  # Server node configuration
+  config.vm.define "dmercadiS" do |server|
+    server.vm.hostname = "dmercadiS"
+    server.vm.network "private_network", ip: "192.168.56.110"
+    
+    server.vm.provider "virtualbox" do |vb|
+      vb.name = "dmercadiS"
+      vb.memory = "1024"
+    end
+
+    # Provision K3s server
+    server.vm.provision "shell", inline: <<-SHELL
+      # Install K3s in server mode
+      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --node-ip=192.168.56.110 --flannel-iface=eth1" sh -
+      
+      # Wait for K3s to be ready
+      until systemctl is-active --quiet k3s; do
+        echo "Waiting for K3s to start..."
+        sleep 5
+      done
+      
+      # Get the node token for worker nodes
+      until [ -f /var/lib/rancher/k3s/server/node-token ]; do
+        echo "Waiting for node token..."
+        sleep 5
+      done
+      
+      # Make kubectl accessible without sudo
+      mkdir -p /home/vagrant/.kube
+      cp /etc/rancher/k3s/k3s.yaml /home/vagrant/.kube/config
+      chown -R vagrant:vagrant /home/vagrant/.kube
+      chmod 600 /home/vagrant/.kube/config
+      
+      # Create token file accessible by vagrant user
+      cp /var/lib/rancher/k3s/server/node-token /vagrant/node-token
+      chmod 644 /vagrant/node-token
+      
+      # Create kubectl alias
+      echo 'alias k="kubectl"' >> /home/vagrant/.bashrc
+      
+      echo "K3s server installation completed"
+    SHELL
+  end
+
+  # Worker node configuration
+  config.vm.define "dmercadiSW" do |worker|
+    worker.vm.hostname = "dmercadiSW"
+    worker.vm.network "private_network", ip: "192.168.56.111"
+    
+    worker.vm.provider "virtualbox" do |vb|
+      vb.name = "dmercadiSW"
+      vb.memory = "1024"
+    end
+
+    # Provision K3s worker
+    worker.vm.provision "shell", inline: <<-SHELL
+      # Wait for token file to be available
+      until [ -f /vagrant/node-token ]; do
+        echo "Waiting for server node token..."
+        sleep 5
+      done
+      
+      K3S_TOKEN=$(cat /vagrant/node-token)
+      K3S_URL="https://192.168.56.110:6443"
+      
+      # Install K3s in agent mode
+      curl -sfL https://get.k3s.io | K3S_URL="${K3S_URL}" K3S_TOKEN="${K3S_TOKEN}" INSTALL_K3S_EXEC="agent --node-ip=192.168.56.111 --flannel-iface=eth1" sh -
+      
+      # Wait for K3s agent to be ready
+      until systemctl is-active --quiet k3s-agent; do
+        echo "Waiting for K3s agent to start..."
+        sleep 5
+      done
+      
+      echo "K3s agent installation completed"
+    SHELL
+  end
+
+  # SSH configuration for passwordless access
+  config.ssh.insert_key = false
+  config.ssh.forward_agent = true
+end
