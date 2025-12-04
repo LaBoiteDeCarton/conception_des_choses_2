@@ -1,5 +1,5 @@
 Vagrant.configure(2) do |config|
-    config.vm.box = "generic/alpine318"
+    config.vm.box = "ubuntu/bionic64"
     config.vm.define "dmercadiS" do |control|
         control.vm.hostname = "dmercadiS"
         control.vm.network "private_network", ip: "192.168.56.110"
@@ -9,7 +9,10 @@ Vagrant.configure(2) do |config|
             v.cpus = 1
         end
         config.vm.provision "shell", inline: <<-SHELL
+            export INSTALL_K3S_EXEC="--write-kubeconfig-mode=644 --tls-san serverS --node-ip 192.168.56.110 --bind-address=192.168.56.110 --advertise-address=192.168.56.110 "
             curl -sfL https://get.k3s.io | sh -
+            sudo cat /var/lib/rancher/k3s/server/token >> /vagrant/token.env
+            sudo ip link add eth1 type dummy && sudo ip addr add 192.168.56.110/24 dev eth1 && sudo ip link set eth1 up
         SHELL
     end
     config.vm.define "dmercadiSW" do |control|
@@ -21,9 +24,9 @@ Vagrant.configure(2) do |config|
             v.cpus = 1
         end
         config.vm.provision "shell", inline: <<-SHELL
-            sleep 30
-            TOKEN=$(ssh -o StrictHostKeyChecking=no vagrant@192.168.56.110 "sudo cat /var/lib/rancher/k3s/server/node-token")
-            curl -sfL https://get.k3s.io | K3S_URL=https://192.168.56.110:6443 K3S_TOKEN=$TOKEN sh -
+            export INSTALL_K3S_EXEC="agent --server https://192.168.56.110:6443 -t $(cat /vagrant/token.env) --node-ip=192.168.56.111"
+            curl -sfL https://get.k3s.io | sh -
+            sudo ip link add eth1 type dummy && sudo ip addr add 192.168.56.111/24 dev eth1 && sudo ip link set eth1 up
         SHELL
     end
 end
