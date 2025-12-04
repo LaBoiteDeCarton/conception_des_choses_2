@@ -1,0 +1,25 @@
+IOT
+
+Vagrantfile permet de lancer des VM
+- Vb fail
+* libvirt - virtsh command : virtsh list /virtsh net-undefine/ etc
+
+VM hote en qemu?
+
+Pour la P1, dans la vm installer K3S. Utilisation du même token pour initialiser un deuxième cluster avec le même K3S (implique installation?)
+
+P2 utilisation de plusieurs pod pour une app et pos unique pour deux autres
+
+.yaml déploiement: replicas pour plusieurs pods
+
+Pour deploy utiliser commande kubectl (ou cli de K3S natif)
+
+
+
+
+installation libvirt 
+macos : 
+    - brew install libvirt
+    activation : 
+    libvirtd OU
+    brew services start libvirt

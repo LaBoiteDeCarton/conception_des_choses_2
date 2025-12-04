@@ -1,0 +1,23 @@
+Vagrant.configure("2") do |config|
+  config.vm.define "dmercadiS" do |server|
+    config.vm.box = "generic/ubuntu2204"
+    server.vm.hostname = "dmercadiS"
+    server.vm.network "private_network", ip: "192.168.56.110"
+    control.vm.provider "qemu" do |qemu|
+        qemu.arch = "aarch64"
+        qemu.smp = "1"
+        qemu.memory = "1024"
+        qemu.ssh_port = 5022
+        qemu.extra_args = "-machine virt,accel=hvf -cpu host -netdev user,id=net0,hostfwd=tcp::5022-:22,hostfwd=tcp::6443-:6443 -device virtio-net-pci,netdev=net0"
+    end
+    config.vm.provision "shell", type: "shell", inline: <<-SHELL, run: "always", privileged: false
+        echo "Provisioning k3s (SSH optional)..."
+        export INSTALL_K3S_EXEC="--write-kubeconfig-mode=644 --tls-san localhost --bind-address=0.0.0.0"
+        sudo curl -sfL https://get.k3s.io | sh -
+        k3s kubectl	apply -f deployments.yaml
+        k3s kubectl	apply -f services.yaml
+        k3s kubectl	apply -f ingresses.yaml
+    SHELL
+    end
+  end
+end
