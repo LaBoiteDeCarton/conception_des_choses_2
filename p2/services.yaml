@@ -6,7 +6,7 @@ spec:
   selector:
     app: app1
   ports:
-    - protocol: TCP
+    - protocol: TCP #clusterIP
       port: 8080
       targetPort: 80
 
