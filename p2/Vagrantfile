@@ -10,7 +10,7 @@ Vagrant.configure("2") do |config|
     server.vm.provision "shell", inline: <<-SHELL
         sudo apt update && sudo apt upgrade -y
         sudo ufw disable
-        export INSTALL_K3S_EXEC="--write-kubeconfig-mode=644 --tls-san localhost --bind-address=0.0.0.0"
+        export INSTALL_K3S_EXEC="--write-kubeconfig-mode=644 --tls-san serverS --node-ip 192.168.56.110 --bind-address=192.168.56.110 --advertise-address=192.168.56.110 "
         sudo curl -sfL https://get.k3s.io | sh -
         k3s kubectl	apply -f deployments.yaml
         k3s kubectl	apply -f services.yaml
