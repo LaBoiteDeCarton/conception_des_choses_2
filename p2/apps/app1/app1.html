@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App 1</title>
+</head>
+<body>  
+    <h1>Welcome to App 1</h1>
+    <p>This is a simple HTML page for App 1.</p>
+    <button onclick="handleClick()">Click me</button>
+    <p>You have clicked the button <span id="clickCountDisplay">0</span> times.</p>
+    <script>
+        let clickCount = 0;
+        document.getElementById('clickCountDisplay').textContent = clickCount;
+        
+        function handleClick() {
+            clickCount++;
+            document.getElementById('clickCountDisplay').textContent = clickCount;
+        }
+    </script>
+</body>
+</html>

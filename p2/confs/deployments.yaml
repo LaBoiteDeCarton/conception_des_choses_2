@@ -23,7 +23,7 @@ spec:
       volumes:
       - name: html
         hostPath:
-          path: /vagrant/app1.html
+          path: /vagrant/apps/app1/app1.html
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -50,7 +50,7 @@ spec:
       volumes:
       - name: html
         hostPath:
-          path: /vagrant/app2.html
+          path: /vagrant/apps/app2/app2.html
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -77,4 +77,4 @@ spec:
       volumes:
       - name: html
         hostPath:
-          path: /vagrant/app3.html
+          path: /vagrant/apps/app3/app3.html
