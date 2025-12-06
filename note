@@ -23,3 +23,9 @@ macos :
     activation : 
     libvirtd OU
     brew services start libvirt
+
+
+
+
+p3
+installation de K3d au lieu de k3S
