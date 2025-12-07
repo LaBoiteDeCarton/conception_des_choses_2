@@ -14,7 +14,7 @@ kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=argocd-server -n argocd
 echo "Starting port-forward in background..."
-kubectl port-forward svc/argocd-server -n argocd 8080:443 &
+kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
 PORT_FORWARD_PID=$!
 echo "Port-forward started with PID: $PORT_FORWARD_PID"
 echo "Waiting for port-forward to be ready..."
@@ -28,7 +28,7 @@ echo "Waiting for application to be deployed..."
 kubectl wait --for=condition=ready --timeout=300s pod -l app=app-iot-dmercadi -n dev
 
 echo "Starting application port-forward in background..."
-kubectl port-forward svc/app-iot-dmercadi-service -n dev 8888:80 &
+kubectl port-forward svc/app-iot-dmercadi-service -n dev 8888:80 > /dev/null 2>&1 &
 APP_PORT_FORWARD_PID=$!
 echo "Application port-forward started with PID: $APP_PORT_FORWARD_PID"
 
