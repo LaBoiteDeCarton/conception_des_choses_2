@@ -7,15 +7,18 @@
 #   https://yashguptaa.medium.com/application-deploy-to-kubernetes-with-argo-cd-and-k3d-8e29cf4f83ee
 
 
-k3d cluster create dmercadiS --port "8888:80@loadbalancer" --port "8080:443@loadbalancer"
+k3d cluster create dmercadiS --port "8888:80@loadbalancer"
 kubectl create namespace dev
 microk8s enable dns && microk8s stop && microk8s start
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=argocd-server -n argocd
-kubectl apply -f ../confs/argocd-ingress.yaml
-echo "Waiting for ArgoCD ingress to be ready..."
-sleep 10
+echo "Starting port-forward in background..."
+kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
+PORT_FORWARD_PID=$!
+echo "Port-forward started with PID: $PORT_FORWARD_PID"
+echo "Waiting for port-forward to be ready..."
+sleep 5
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 kubectl apply -n argocd -f ../confs/argocd-app-iot-dmercadi.yaml
 kubectl wait --for=condition=ready --timeout=300s pod -l app=app-iot-dmercadi -n dev
@@ -24,10 +27,11 @@ kubectl wait --for=condition=ready --timeout=300s pod -l app=app-iot-dmercadi -n
 echo "Waiting for ingress to be ready..."
 sleep 10
 
-# K3D exposes Traefik on port 8888 for app and 8080 for ArgoCD
+# K3D exposes Traefik on port 8888 by default when created with port mapping
 echo "ArgoCD setup complete!"
-echo "ArgoCD UI is available at: https://argocd.localhost:8080"
-echo "Your application is available at: http://localhost:8888"
+echo "ArgoCD UI is available at: https://localhost:8080"
+echo "Your application is available at: http://localhost:8888 (via Traefik ingress)"
+echo "To stop the ArgoCD port-forward, run: kill $PORT_FORWARD_PID"
 echo "Or use: pkill -f 'kubectl port-forward'"
 
 
