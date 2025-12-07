@@ -51,3 +51,14 @@ else
     echo "k3d is already installed: $(k3d version)"
 fi
 ##### K3D INSTALLATION END
+
+##### ARGOCD-CLI INSTALLATION
+# Source : https://argo-cd.readthedocs.io/en/stable/cli_installation/
+echo "Checking for ArgoCD CLI installation"
+if (! command -v argocd &> /dev/null); then
+    echo "ArgoCD CLI not found. Installing ArgoCD CLI..."
+    brew install argocd
+else
+    echo "ArgoCD CLI is already installed"
+fi
+##### ARGOCD-CLI INSTALLATION END
