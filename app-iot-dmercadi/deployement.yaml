@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-iot-dmercadi
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: app-iot-dmercadi
+  template:
+    metadata:
+      labels:
+        app: app-iot-dmercadi
+    spec:
+      containers:
+        - image: wil42/playground:v1
+          name: guestbook-ui
+          ports:
+            - containerPort: 80
