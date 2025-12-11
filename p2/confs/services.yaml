@@ -7,7 +7,7 @@ spec:
     app: app1
   ports:
     - protocol: TCP #clusterIP
-      port: 8080
+      port: 80
       targetPort: 80
 
 ---
@@ -21,7 +21,7 @@ spec:
     app: app2
   ports:
     - protocol: TCP
-      port: 8080
+      port: 80
       targetPort: 80
 
 ---
@@ -35,5 +35,5 @@ spec:
     app: app3
   ports:
     - protocol: TCP
-      port: 8080
+      port: 80
       targetPort: 80
