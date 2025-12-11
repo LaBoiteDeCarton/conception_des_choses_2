@@ -7,21 +7,20 @@
 #   https://yashguptaa.medium.com/application-deploy-to-kubernetes-with-argo-cd-and-k3d-8e29cf4f83ee
 
 
-k3d cluster create dmercadiS --port "8888:80@loadbalancer"
-kubectl create namespace dev
-microk8s enable dns && microk8s stop && microk8s start
-kubectl create namespace argocd
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=argocd-server -n argocd
+sudo k3d cluster create dmercadiS --port "8888:80@loadbalancer"
+sudo kubectl create namespace dev
+sudo sudo kubectl create namespace argocd
+sudo kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+sudo kubectl wait --for=condition=ready --timeout=600s pod -l app.kubernetes.io/name=argocd-server -n argocd
 echo "Starting port-forward in background..."
-kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
+sudo kubectl port-forward svc/argocd-server -n argocd 8080:443 > /dev/null 2>&1 &
 PORT_FORWARD_PID=$!
 echo "Port-forward started with PID: $PORT_FORWARD_PID"
 echo "Waiting for port-forward to be ready..."
 sleep 5
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
-kubectl apply -n argocd -f ../confs/argocd-app-iot-dmercadi.yaml
-kubectl wait --for=condition=ready --timeout=300s pod -l app=app-iot-dmercadi -n dev
+sudo kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+sudo kubectl apply -n argocd -f ../confs/argocd-app-iot-dmercadi.yaml
+sudo kubectl wait --for=condition=ready --timeout=300s pod -l app=app-iot-dmercadi -n dev
 
 # Wait for ingress to be ready
 echo "Waiting for ingress to be ready..."
