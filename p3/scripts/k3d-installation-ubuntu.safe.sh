@@ -4,6 +4,8 @@
 # ==============================================================================
 
 sudo apt update && sudo apt upgrade -y
+sudo apt install curl
+
 
 ##### DOCKER INSTALLATION
 # Source : https://docs.docker.com/engine/install/ubuntu/#install-using-the-convenience-script
@@ -12,6 +14,7 @@ if (! command -v docker &> /dev/null); then
     echo "Docker not found. Installing Docker..."
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
+    sudo rm get-docker.sh
 else
     echo "Docker is already installed"
 fi
