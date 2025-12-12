@@ -22,30 +22,25 @@ if ! command -v vagrant >/dev/null 2>&1; then
     echo -e "${YELLOW}Vagrant is not installed. Proceeding with installation.${NC}"
     wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-    sudo apt update && sudo apt install -y vagrant
+    sudo apt install -y vagrant
 else
     echo -e "${GREEN}Vagrant is already installed: $(vagrant --version)${NC}"
 fi
 ##### VAGRANT INSTALLATION END
 
-#libvirt
-#curl https://download.libvirt.org/deb/virt-install_0.300.1-9/virt-install_0.300.1-9_i386.deb -o libvirtinstall.deb
-#open libvirtinstall.deb
-
 ##### LIBVIRT INSTALLATION
 echo -e "${YELLOW}Installing libvirt and related packages...${NC}"
-sudo apt install -y libvirt-dev libvirt-daemon-system qemu libvirt-clients qemu-system qemu-utils
+sudo apt install -y libvirt-dev libvirt-daemon-system libvirt-clients qemu-kvm qemu-system qemu-utils
 sudo usermod -aG libvirt $USER
+sudo systemctl enable --now libvirtd
 ##### LIBVIRT INSTALLATION END
 
-###### INSTALLATION/REINSTALLATION OF VAGRANT-LIBVIRT PLUGIN
-echo -e "${YELLOW}Installing/Reinstalling vagrant-libvirt plugin...${NC}"
-sudo apt-get purge vagrant-libvirt
-sudo apt-mark hold vagrant-libvirt
-sudo apt-get install -y qemu ebtables libguestfs-tools
-sudo apt-get install -y vagrant ruby-fog-libvirt
+###### INSTALLATION OF VAGRANT-LIBVIRT PLUGIN
+echo -e "${YELLOW}Installing vagrant-libvirt plugin...${NC}"
+sudo apt-get install -y ebtables libguestfs-tools
+sudo apt-get install -y ruby-fog-libvirt
 sg libvirt -c "vagrant plugin install vagrant-libvirt"
-##### VAGRANT-LIBVIRT INSTALLATION/REINSTALLATION END
+##### VAGRANT-LIBVIRT INSTALLATION END
 
 ##### NFS INSTALLATION
 echo -e "${YELLOW}Installing NFS packages...${NC}"
